@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["clientExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model company {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  description String?  @db.VarChar(255)
+  image       String?  @db.VarChar(255)
+  name        String   @db.VarChar(255)
+  created_at  DateTime @default(now()) @db.Timestamp(6)
+  updated_at  DateTime @default(now()) @db.Timestamp(6)
+  user_id     String   @db.Uuid
+  tenant_id   String   @db.VarChar(255)
+  user        user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model employee {
+  id         String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  first_name String     @db.VarChar(255)
+  last_name  String     @db.VarChar(255)
+  user_id    String?    @db.Uuid
+  created_at DateTime   @default(now()) @db.Timestamp(6)
+  updated_at DateTime   @default(now()) @db.Timestamp(6)
+  user       user?      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  payroll    payroll[]
+  vacation   vacation[]
+}
+
+model payroll {
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  salary      Int
+  employee_id String?   @db.Uuid
+  created_at  DateTime  @default(now()) @db.Timestamp(6)
+  updated_at  DateTime  @default(now()) @db.Timestamp(6)
+  employee    employee? @relation(fields: [employee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email       String     @unique @db.VarChar(255)
+  firstName   String?    @db.VarChar(255)
+  lastName    String?    @db.VarChar(255)
+  roq_user_id String     @db.VarChar(255)
+  tenant_id   String     @db.VarChar(255)
+  created_at  DateTime   @default(now()) @db.Timestamp(6)
+  updated_at  DateTime   @default(now()) @db.Timestamp(6)
+  company     company[]
+  employee    employee[]
+}
+
+model vacation {
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  start_date  DateTime  @db.Date
+  end_date    DateTime  @db.Date
+  employee_id String?   @db.Uuid
+  created_at  DateTime  @default(now()) @db.Timestamp(6)
+  updated_at  DateTime  @default(now()) @db.Timestamp(6)
+  employee    employee? @relation(fields: [employee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
